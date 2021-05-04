@@ -1,6 +1,7 @@
 import LRUCache from "lru-cache";
 import { ProbotOctokit } from "./probot-octokit";
 import Redis from "ioredis";
+var agent = require('proxy-agent');
 
 import { getOctokitThrottleOptions } from "./get-octokit-throttle-options";
 
@@ -15,6 +16,7 @@ type Options = {
   privateKey?: string;
   redisConfig?: Redis.RedisOptions | string;
   baseUrl?: string;
+  request?: object;
 };
 
 /**
@@ -47,6 +49,10 @@ export function getProbotOctokitWithDefaults(options: Options) {
     baseUrl: options.baseUrl,
     auth: authOptions,
   };
+
+  if (process.env.HTTP_PROXY !== undefined || process.env.HTTPS_PROXY !== undefined) {
+    defaultOptions.request = { agent: new agent()};
+  }
 
   if (octokitThrottleOptions) {
     defaultOptions.throttle = octokitThrottleOptions;
